@@ -34,38 +34,79 @@ public class UserResource {
 	@GET
 	@Produces(MediaType.TEXT_PLAIN)
 	public String getUser(@PathParam("username") String username) {
-		return username;
-	}
-	
-	/**
-	 * Method handling HTTP POST requests. The returned object will be sent
-	 * to the client as "application/json" media type.
-	 */
-	@POST
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	@Produces(MediaType.APPLICATION_JSON)
-	public String ceateUser(@BeanParam User newUser) {
+		
+		System.out.println(username);
 		
 		StringBuilder sb = new StringBuilder();
 		
-		final String sql = "insert into user(name, password, profession) values (?, ?, ?);";
-		
-		final String querySql = "select * from user;";
+		final String sql = "select * from users where name like '%" + username + "%'";
 		
 		PreparedStatement ps = null;
-		PreparedStatement psQuery = null;
+		ResultSet rs = null;
 		
 		try {
 			ps = DBUtil.getConnection().prepareStatement(sql);
+			rs = ps.executeQuery();
 			
-			ps.setString(1, newUser.getName());
-			ps.setString(2, newUser.getPassword());
-			ps.setString(3, newUser.getProfession());
+			if (rs.next()) {
+				User user = new User();
+				
+				user.setId(rs.getInt("id"));
+				user.setName("name");
+				user.setPassword("password");
+				user.setProfession("profession");
+				
+				sb.append(user.makeJSON());
+			} else {
+				sb.append("HEAD: { CODE : 404 }, BODY: { MESSAGE : NO DATA FOUND} ");
+			}
 			
-			ps.execute();
+		} catch (SQLException se) {
+			se.printStackTrace();
+		} finally {
+			try {
+				if (null != rs) {
+					rs.close();
+				}
+			} catch (SQLException se) {
+				se.printStackTrace();
+			} finally {
+				rs = null;
+			}
 			
+			try {
+				if (null != ps) {
+					ps.close();
+				}
+			} catch (SQLException se) {
+				se.printStackTrace();
+			} finally {
+				ps = null;
+			}
+		}
+		
+		return sb.toString();
+	}
+
+	/**
+	 * Method handling HTTP GET requests. The returned object will be sent
+	 * to the client as "text/plain" media type.
+	 * 
+	 * @return String that will be returned as a text/plain response.
+	 */
+	@GET @Path("list")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String listUsers() {
+
+		StringBuilder sb = new StringBuilder();
+		
+		final String querySql = "select * from user;";
+		PreparedStatement psQuery = null;
+		ResultSet rs = null;
+		
+		try {
 			psQuery = DBUtil.getConnection().prepareStatement(querySql);
-			ResultSet rs = psQuery.executeQuery();
+			rs = psQuery.executeQuery();
 			
 			while (rs.next()) {
 				User usr = new User();
@@ -84,16 +125,65 @@ public class UserResource {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
+			if (null != rs) {
+				try {
+					rs.close();
+				} catch (SQLException se) {
+					se.printStackTrace();
+				} finally {
+					rs = null;
+				}
+			}
+			if (null != psQuery) {
+				try {
+					psQuery.close();
+				} catch (SQLException se) {
+					se.printStackTrace();
+				} finally {
+					psQuery = null;
+				}
+			}
+		}
+		return sb.toString();
+	}
+	
+	
+	/**
+	 * Method handling HTTP POST requests. The returned object will be sent
+	 * to the client as "application/json" media type.
+	 */
+	@POST
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces(MediaType.APPLICATION_JSON)
+	public String ceateUser(@BeanParam User newUser) {
+		
+		final String sql = "insert into user(name, password, profession) values (?, ?, ?);";
+		
+		PreparedStatement ps = null;
+		
+		try {
+			ps = DBUtil.getConnection().prepareStatement(sql);
+			
+			ps.setString(1, newUser.getName());
+			ps.setString(2, newUser.getPassword());
+			ps.setString(3, newUser.getProfession());
+			
+			ps.execute();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
 			if (null != ps) {
 				try {
 					ps.close();
 				} catch (SQLException se) {
 					se.printStackTrace();
+				} finally {
+					ps = null;
 				}
-				ps = null;
 			}
 		}
-		return sb.toString();
+		return listUsers();
 	}
 	
 }
