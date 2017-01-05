@@ -4,7 +4,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.Response;
 
-import cucumber.api.PendingException;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -49,9 +48,9 @@ public class UserResourceTest_Steps {
 	}
 	
 	@When("^users search with name Jony Washton$")
-	public void users_search_with_name_Jony_Washton() throws Throwable {
+	public void searchWithNameJony() throws Throwable {
 
-	    response = TestRunner.target.path("users/sss").request().get();
+	    response = TestRunner.target.path("users/names/Jony").request().get();
 	}
 	
 	@Then("^the server return an user info named Jony Washton$")
@@ -59,6 +58,18 @@ public class UserResourceTest_Steps {
 
 	    System.out.println(response.readEntity(String.class));
 	}
-
 	
+	
+	@When("^users search all$")
+	public void getAllUsers() throws Throwable {
+
+	    response = TestRunner.target.path("users/list").request().get();
+	}
+	
+	@Then("^the server return all users$")
+	public void the_server_return_all_users() throws Throwable {
+
+	    System.out.println(response.readEntity(String.class));
+	}
+
 }

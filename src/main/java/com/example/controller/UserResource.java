@@ -31,7 +31,7 @@ public class UserResource {
 	 * 
 	 * @return String that will be returned as a text/plain response.
 	 */
-	@GET
+	@GET @Path("/names/{username}")
 	@Produces(MediaType.TEXT_PLAIN)
 	public String getUser(@PathParam("username") String username) {
 		
@@ -39,7 +39,7 @@ public class UserResource {
 		
 		StringBuilder sb = new StringBuilder();
 		
-		final String sql = "select * from users where name like '%" + username + "%'";
+		final String sql = "select * from user where name like '%" + username + "%'";
 		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -52,9 +52,9 @@ public class UserResource {
 				User user = new User();
 				
 				user.setId(rs.getInt("id"));
-				user.setName("name");
-				user.setPassword("password");
-				user.setProfession("profession");
+				user.setName(rs.getString("name"));
+				user.setPassword(rs.getString("password"));
+				user.setProfession(rs.getString("profession"));
 				
 				sb.append(user.makeJSON());
 			} else {

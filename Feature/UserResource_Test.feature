@@ -9,4 +9,7 @@ Feature: Testing User Resource API
 		Given there a an user named Jony Washton
 		When users search with name Jony Washton
 		Then the server return an user info named Jony Washton
-	 
+
+	Scenario: Successful get all users
+		When users search all
+		Then the server return all users
